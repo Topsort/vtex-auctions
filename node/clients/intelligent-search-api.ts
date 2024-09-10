@@ -165,7 +165,7 @@ export class IntelligentSearchApi extends ExternalClient {
   ) {
     const { query, leap, searchState, alwaysLeafCategoryAuction, activateDebugSponsoredTags, skipAuctionForSearchAndCategory } = params;
     if (isPathTraversal(path)) {
-      throw new Error("Malformed URL");
+      throw new Error("Malformed URL")
     }
 
     const search = new Search(this.context, {
@@ -183,9 +183,9 @@ export class IntelligentSearchApi extends ExternalClient {
         ...parseState(searchState),
         ...params,
       },
-      metric: "product-search",
+      metric: 'product-search',
       headers: {
-        "x-vtex-shipping-options": shippingHeader ?? "",
+        'x-vtex-shipping-options': shippingHeader ?? '',
       },
     });
 

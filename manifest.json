@@ -31,7 +31,7 @@
     "vtex.intelligent-search-api": "0.x"
   },
   "settingsSchema": {
-    "title": "Topsort Intelligent Search Resolver",
+    "title": "Intelligent Search Resolver",
     "type": "object",
     "properties": {
       "sponsoredCount": {
@@ -94,13 +94,6 @@
       "name": "outbound-access",
       "attrs": {
         "host": "search.biggylabs.com.br",
-        "path": "/*"
-      }
-    },
-    {
-      "name": "outbound-access",
-      "attrs": {
-        "host": "api.topsort.com",
         "path": "/*"
       }
     },
