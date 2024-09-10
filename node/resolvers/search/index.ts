@@ -370,7 +370,8 @@ export const queries = {
 
     delete biggyArgs.selectedFacets
 
-    const result = await intelligentSearchApi.facets({...biggyArgs, query: args.fullText}, buildAttributePath(selectedFacets), shippingOptions)
+    const settings: AppSettings = await ctx.clients.apps.getAppSettings(APP_NAME)
+    const result = await intelligentSearchApi.facets({...biggyArgs, query: args.fullText}, buildAttributePath(selectedFacets), shippingOptions, settings.topsortApiKey)
 
     if (ctx.vtex.tenant) {
       ctx.translated = result.translated
