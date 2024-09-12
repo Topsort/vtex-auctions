@@ -1,4 +1,3 @@
-import { Auction } from "@topsort/sdk";
 import { ExternalClient, InstanceOptions, IOContext } from "@vtex/api";
 import { parseState } from "../utils/searchState";
 import { unveil } from "../resolvers/search/utils";
