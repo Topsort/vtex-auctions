@@ -62,6 +62,11 @@ declare global {
     marketplaceAPIKey: string
   }
 
+  interface ServiceSettings {
+    advancedAPIKey: string,
+    marketplaceAPIKey: string
+  }
+
   interface DegradedSearchError {
     service: string
     error: string
