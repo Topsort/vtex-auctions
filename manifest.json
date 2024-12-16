@@ -19,6 +19,9 @@
       "*"
     ]
   },
+  "peerDependencies": {
+    "topsortpartnercl.services": "3.x"
+  },
   "dependencies": {
     "vtex.messages": "1.x",
     "vtex.catalog-api-proxy": "0.x",
@@ -31,11 +34,6 @@
     "title": "Topsort Intelligent Search Resolver",
     "type": "object",
     "properties": {
-      "topsortApiKey": {
-        "title": "Topsort API Key",
-        "type": "string",
-        "default": ""
-      },
       "sponsoredCount": {
         "title": "Topsort Number of Sponsored Slots",
         "type": "number",
