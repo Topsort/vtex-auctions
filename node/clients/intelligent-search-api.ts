@@ -169,7 +169,7 @@ export class IntelligentSearchApi extends ExternalClient {
         return undefined
       });
 
-    if (!serviceSettings?.advancedAPIKey) {
+    if (!serviceSettings?.marketplaceAPIKey) {
       this.context.logger.info({
         service: "IntelligentSearchApi",
         message: "Topsort API Key is not set",
@@ -199,7 +199,7 @@ export class IntelligentSearchApi extends ExternalClient {
           "X-Vtex-Remote-Port": 443,
           "X-UA": `@topsort/vtex-search-resolver`,
           Accept: "application/json",
-          Authorization: `Bearer ${serviceSettings.advancedAPIKey}`,
+          Authorization: `Bearer ${serviceSettings.marketplaceAPIKey}`,
         }
       })
 
