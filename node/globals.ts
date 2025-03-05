@@ -58,6 +58,7 @@ declare global {
   interface AppSettings {
     slugifyLinks: boolean,
     sponsoredCount: number,
+    sponsoredCategoryCount: number,
   }
 
   interface ServiceSettings {

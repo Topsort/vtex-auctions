@@ -35,7 +35,12 @@
     "type": "object",
     "properties": {
       "sponsoredCount": {
-        "title": "Topsort Number of Sponsored Slots",
+        "title": "Topsort Number of Sponsored Product Slots",
+        "type": "number",
+        "default": 2
+      },
+      "sponsoredCategoryCount": {
+        "title": "Topsort Number of Sponsored Category Slots",
         "type": "number",
         "default": 2
       },

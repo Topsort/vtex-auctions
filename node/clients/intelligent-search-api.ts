@@ -35,6 +35,7 @@ interface FacetsArgs {
   initialAttributes?: string
   workspaceSearchParams?: object
   regionId?: string | null
+  sponsoredCategoryCount?: number
 }
 
 type AuctionType = "banners" | "listings";
@@ -117,9 +118,11 @@ export class IntelligentSearchApi extends ExternalClient {
       throw new Error("Malformed URL")
     }
 
+    console.log('facets in intelligent-search')
+
     const { query, leap, searchState } = params
 
-    return this.http.get(`/facets/${path}`, {
+    const result = await this.http.get(`/facets/${path}`, {
       params: {
         ...params,
         query: query && decodeQuery(query),
@@ -132,6 +135,85 @@ export class IntelligentSearchApi extends ExternalClient {
         'x-vtex-shipping-options': shippingHeader ?? '',
       },
     })
+
+    console.log('facets result', result)
+
+    if (result.categories && result.categories.length > 0) {
+      await this.processCategoryAuctions(result, params);
+    }
+
+    return result;
+  }
+
+  private async processCategoryAuctions(facetsResult: any, params?: FacetsArgs) {
+    if (!facetsResult.categories || facetsResult.categories.length === 0) {
+      return;
+    }
+
+    try {
+      const { data } = await this.http
+        .get(`http://${this.context.workspace}--${this.context.account}.myvtex.com/_v/ts/settings`)
+        .catch((error) => {
+          console.error(`Error fetching Topsort Services settings: ${error}`)
+          return { data: undefined }
+        });
+
+      const marketplaceAPIKey = unveil(data)?.marketplaceAPIKey || undefined
+
+      if (!marketplaceAPIKey) {
+        this.context.logger.info({
+          service: "IntelligentSearchApi",
+          message: "Topsort API Key is not set",
+        });
+        return;
+      }
+
+      const categoryIds = facetsResult.categories.map((category: any) => category.id.toString());
+      const sponsoredSlots = params?.sponsoredCategoryCount || 2;
+      const auction = {
+        auctions: [
+          {
+            type: "listings",
+            slots: sponsoredSlots,
+            category: {
+              ids: categoryIds,
+            },
+          },
+        ],
+      };
+
+      const auctionResult = await this.http.post<AuctionResult>('http://api.topsort.com/v2/auctions', auction, {
+        headers: {
+          "Content-Type": "application/json",
+          "X-VTEX-Use-Https": true,
+          "X-Vtex-Remote-Port": 443,
+          "X-UA": `@topsort/vtex-search-resolver`,
+          Accept: "application/json",
+          Authorization: `Bearer ${marketplaceAPIKey}`,
+        }
+      });
+
+      const categoryMap = new Map(facetsResult.categories.map((category: any) => [category.id.toString(), category]));
+      console.log('categoryMap', categoryMap)
+      const sponsoredCategories: any[] = [];
+
+      if (auctionResult.results[0]?.winners) {
+        console.log('PROCESSING_AUCTION_WINNERS', auctionResult.results[0].winners);
+      }
+
+      this.context.logger.info({
+        service: "IntelligentSearchApi",
+        message: "Category auction completed successfully",
+        sponsoredCategories: sponsoredCategories.length,
+      });
+    } catch (err) {
+      this.context.logger.warn({
+        service: "IntelligentSearchApi",
+        error: err.message,
+        errorStack: err,
+        message: "Error processing category auctions"
+      });
+    }
   }
 
   public async productSearch(

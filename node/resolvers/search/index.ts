@@ -316,8 +316,9 @@ const buildSelectedFacets = (args: SearchArgs) => {
 }
 
 const defaultAdvertisementOptions: AdvertisementOptions = {
-  showSponsored: false,
+  showSponsored: true,
   sponsoredCount: 3,
+  sponsoredCategoryCount: 2,
   repeatSponsoredProducts: true
 }
 
@@ -349,6 +350,13 @@ export const queries = {
     }
   },
   facets: async (_: any, args: FacetsInput, ctx: any) => {
+    console.log('FACETS_RESOLVER_INITIAL', {
+      map: args.map,
+      fullText: args.fullText,
+      query: args.query,
+      selectedFacets: JSON.stringify(args.selectedFacets)
+    });
+
     const [shippingOptions, facets] = getShippingOptionsFromSelectedFacets(args.selectedFacets)
 
     args.selectedFacets = facets
@@ -358,24 +366,64 @@ export const queries = {
       args
     )) as FacetsInput
 
+    const isCatalogPage = args.map && !args.map.includes('ft');
+    const isSearchTermQuery = args.map && args.map.includes('ft');
+
+    console.log('FACETS_RESOLVER_CALLED', {
+      isCatalogPage,
+      isSearchTermQuery,
+      map: args.map,
+      fullText: args.fullText
+    });
+
     let { selectedFacets } = args
 
     const {
-      clients: { intelligentSearchApi },
+      clients: { intelligentSearchApi, apps },
     } = ctx
 
-    const biggyArgs: {[key:string]: any}  = {
+    const settings: AppSettings = await apps.getAppSettings(APP_NAME)
+    console.log('hereeee settings', settings)
+    const hasFacetsResult = args.selectedFacets && args.selectedFacets.length > 0;
+    const isFacetC = hasFacetsResult && args.selectedFacets.some(facet => facet.key === 'c');
+
+    console.log('CATEGORY_DETECTION', {
+      hasFacetsResult,
+      isFacetC,
+      selectedFacets: JSON.stringify(args.selectedFacets)
+    });
+
+    const advertisementOptions = {
+      ...defaultAdvertisementOptions,
+      sponsoredCategoryCount: settings.sponsoredCategoryCount || defaultAdvertisementOptions.sponsoredCategoryCount || 2,
+      showSponsored: true,
       ...args
     }
+    console.log('ADVERTISEMENT_OPTIONS', advertisementOptions)
 
-    // unnecessary field. It's is an object and breaks the @vtex/api cache
+    const biggyArgs: {[key:string]: any}  = {
+      ...args,
+      ...advertisementOptions
+    }
+
     delete biggyArgs.selectedFacets
+
+    console.log('before calling function')
 
     const result = await intelligentSearchApi.facets({...biggyArgs, query: args.fullText}, buildAttributePath(selectedFacets), shippingOptions)
 
     if (ctx.vtex.tenant) {
       ctx.translated = result.translated
     }
+
+    console.log('FACETS_RESULT', {
+      hasBreadcrumb: !!result.breadcrumb,
+      breadcrumbLength: result.breadcrumb?.length,
+      hasFacets: !!result.facets,
+      facetsLength: result.facets?.length,
+      hasCategories: !!result.categories,
+      categoriesLength: result.categories?.length
+    });
 
     return result
   },
@@ -459,6 +507,8 @@ export const queries = {
 
     // unnecessary field. It's is an object and breaks the @vtex/api cache
     delete biggyArgs.selectedFacets
+
+    console.log('hereeee sponsored products')
 
     const settings: AppSettings = await ctx.clients.apps.getAppSettings(APP_NAME)
     biggyArgs.sponsoredCount = settings.sponsoredCount || biggyArgs.sponsoredCount;
