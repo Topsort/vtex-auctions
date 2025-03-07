@@ -144,6 +144,9 @@ export class IntelligentSearchApi extends ExternalClient {
       throw new Error("Malformed URL");
     }
 
+    console.log('path', path)
+
+    console.log('PARAMS', params.page, params.count)
     const result = await this.http.get(`/product_search/${path}`, {
       params: {
         query: query && decodeQuery(query),
@@ -151,6 +154,8 @@ export class IntelligentSearchApi extends ExternalClient {
         bgy_leap: leap ? true : undefined,
         ...parseState(searchState),
         ...params,
+        page: 10,
+        count: 10,
       },
       metric: "product-search",
       headers: {
@@ -160,6 +165,68 @@ export class IntelligentSearchApi extends ExternalClient {
 
     if (result.products.length === 0) {
       return result;
+    }
+
+    const auctionProductsCount = params.auctionProductsCount || result.products.length;
+    const auctionPagesToFetch = 10;//params.auctionPagesToFetch || 0;
+    let allProducts = [...result.products];
+
+    console.log('allProducts', allProducts)
+
+    console.log('PARAMS', params.page, params.count)
+
+    if (auctionPagesToFetch > 0) {
+      const currentPage = params.page || 1;
+      const productsPerPage = params.count || 12;
+
+      const fetchPromises = [];
+
+      for (let i = 1; i <= auctionPagesToFetch; i++) {
+        const pageToFetch = currentPage + i;
+        console.log('pageToFetch', pageToFetch, Math.ceil(result.recordsFiltered / productsPerPage))
+
+        if (pageToFetch > Math.ceil(result.recordsFiltered / productsPerPage)) {
+          continue;
+        }
+
+        fetchPromises.push(
+          this.http.get(`/product_search/${path}`, {
+            params: {
+              query: query && decodeQuery(query),
+              locale: this.locale,
+              bgy_leap: leap ? true : undefined,
+              ...parseState(searchState),
+              ...params,
+              page: pageToFetch,
+            },
+            metric: "product-search-additional-page",
+            headers: {
+              "x-vtex-shipping-options": shippingHeader ?? "",
+            },
+          })
+        );
+      }
+
+      if (fetchPromises.length > 0) {
+        try {
+          const additionalResults = await Promise.all(fetchPromises);
+
+          for (const pageResult of additionalResults) {
+            console.log('allProducts', allProducts)
+            console.log('pageResult', pageResult.products)
+            if (pageResult.products && pageResult.products.length > 0) {
+              allProducts = [...allProducts, ...pageResult.products];
+              console.log('allProducts-after', allProducts.length)
+            }
+          }
+        } catch (error) {
+          this.context.logger.warn({
+            service: "IntelligentSearchApi",
+            message: "Error fetching additional pages for auction",
+            error,
+          });
+        }
+      }
     }
 
     const { data } = await this.http
@@ -180,7 +247,10 @@ export class IntelligentSearchApi extends ExternalClient {
       return result;
     }
 
-    const productIds = result.products.map((product: any) => product.productId);
+    const productIds = allProducts
+      .slice(0, auctionProductsCount)
+      .map((product: any) => product.productId);
+
     const auction = {
       auctions: [
         {
@@ -205,7 +275,7 @@ export class IntelligentSearchApi extends ExternalClient {
         }
       })
 
-      const productMap = new Map(result.products.map((product: any) => [product.productId, product]));
+      const productMap = new Map(allProducts.map((product: any) => [product.productId, product]));
       const sponsoredProducts: any[] = [];
 
       if (auctionResult.results[0].winners) {
@@ -238,7 +308,8 @@ export class IntelligentSearchApi extends ExternalClient {
       this.context.logger.info({
         service: "IntelligentSearchApi",
         message: "createAuction axios api test passed",
-        result: result.products,
+        auctionProductCount: productIds.length,
+        sponsoredCount: sponsoredProducts.length,
       });
     } catch (err) {
       this.context.logger.warn({

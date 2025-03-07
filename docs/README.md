@@ -10,7 +10,53 @@ This app is an implementation of the VTEX search protocol that wraps the VTEX ca
 
 ## How it works?
 
-The store’s search resolver will continue functioning as the standard VTEX search resolver for fetching organic results. However, once these organic results are retrieved, they will be passed to Topsort’s API as part of a request to identify auction winners. The winning sponsored products will then be prioritized and placed at the top of the search results, followed by the organic results, and finally returned to the store.
+The store's search resolver will continue functioning as the standard VTEX search resolver for fetching organic results. However, once these organic results are retrieved, they will be passed to Topsort's API as part of a request to identify auction winners. The winning sponsored products will then be prioritized and placed at the top of the search results, followed by the organic results, and finally returned to the store.
+
+## Advanced Auction Configuration
+
+You can customize the auction behavior by using these additional parameters:
+
+- `auctionProductsCount`: Maximum number of products to include in the auction (default: uses only the current page products)
+- `auctionPagesToFetch`: Number of additional pages to fetch for auction participation (beyond the current page)
+
+Example GraphQL query showing how to use these parameters:
+
+```graphql
+query productSearch($from: Int, $to: Int, $query: String, $map: String, $orderBy: String, $priceRange: String, $auctionPagesToFetch: Int, $auctionProductsCount: Int) {
+  productSearch(
+    from: $from,
+    to: $to,
+    query: $query,
+    map: $map,
+    orderBy: $orderBy,
+    priceRange: $priceRange,
+    auctionPagesToFetch: $auctionPagesToFetch,
+    auctionProductsCount: $auctionProductsCount
+  ) {
+    products {
+      productId
+      productName
+      # other product fields...
+    }
+    # other fields...
+  }
+}
+```
+
+With variables:
+```json
+{
+  "from": 0,
+  "to": 11,
+  "query": "shoes",
+  "map": "ft",
+  "orderBy": "OrderByScoreDESC",
+  "auctionPagesToFetch": 2,
+  "auctionProductsCount": 100
+}
+```
+
+This will fetch the current page (12 products) plus 2 additional pages (for a total of 36 products), and include up to 100 products in the auction. The final result will still only contain the products from the current page, but with sponsored products from the expanded pool of auction participants. **Note**: Fetching additional pages adds some processing time, so use these parameters thoughtfully based on your performance needs.
 
 ## Configuration
 
@@ -34,7 +80,7 @@ Now Topsort is running auctions and augmenting your search results successfully!
 ### Next Steps
 See how to send your ad [events](https://developers.vtex.com/docs/apps/topsortpartnercl.events)
 
-We’re constantly improving and adding new features to help you get the most out of your retail media efforts. Stay tuned for upcoming updates and enhancements!
+We're constantly improving and adding new features to help you get the most out of your retail media efforts. Stay tuned for upcoming updates and enhancements!
 
 Follow us on social media to stay updated:
 - [LinkedIn](https://www.linkedin.com/company/topsort)
