@@ -39,11 +39,6 @@
         "type": "number",
         "default": 2
       },
-      "sponsoredCategoryCount": {
-        "title": "Topsort Number of Sponsored Category Slots",
-        "type": "number",
-        "default": 2
-      },
       "slugifyLinks": {
         "title": "Set to slugify links. Uses default catalog slug instead",
         "type": "boolean",

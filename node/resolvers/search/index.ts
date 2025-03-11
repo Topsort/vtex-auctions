@@ -350,13 +350,6 @@ export const queries = {
     }
   },
   facets: async (_: any, args: FacetsInput, ctx: any) => {
-    console.log('FACETS_RESOLVER_INITIAL', {
-      map: args.map,
-      fullText: args.fullText,
-      query: args.query,
-      selectedFacets: JSON.stringify(args.selectedFacets)
-    });
-
     const [shippingOptions, facets] = getShippingOptionsFromSelectedFacets(args.selectedFacets)
 
     args.selectedFacets = facets
@@ -366,40 +359,16 @@ export const queries = {
       args
     )) as FacetsInput
 
-    const isCatalogPage = args.map && !args.map.includes('ft');
-    const isSearchTermQuery = args.map && args.map.includes('ft');
-
-    console.log('FACETS_RESOLVER_CALLED', {
-      isCatalogPage,
-      isSearchTermQuery,
-      map: args.map,
-      fullText: args.fullText
-    });
 
     let { selectedFacets } = args
 
     const {
-      clients: { intelligentSearchApi, apps },
+      clients: { intelligentSearchApi },
     } = ctx
 
-    const settings: AppSettings = await apps.getAppSettings(APP_NAME)
-    console.log('hereeee settings', settings)
-    const hasFacetsResult = args.selectedFacets && args.selectedFacets.length > 0;
-    const isFacetC = hasFacetsResult && args.selectedFacets.some(facet => facet.key === 'c');
-
-    console.log('CATEGORY_DETECTION', {
-      hasFacetsResult,
-      isFacetC,
-      selectedFacets: JSON.stringify(args.selectedFacets)
-    });
-
     const advertisementOptions = {
-      ...defaultAdvertisementOptions,
-      sponsoredCategoryCount: settings.sponsoredCategoryCount || defaultAdvertisementOptions.sponsoredCategoryCount || 2,
-      showSponsored: true,
       ...args
     }
-    console.log('ADVERTISEMENT_OPTIONS', advertisementOptions)
 
     const biggyArgs: {[key:string]: any}  = {
       ...args,
@@ -408,22 +377,12 @@ export const queries = {
 
     delete biggyArgs.selectedFacets
 
-    console.log('before calling function')
-
     const result = await intelligentSearchApi.facets({...biggyArgs, query: args.fullText}, buildAttributePath(selectedFacets), shippingOptions)
 
     if (ctx.vtex.tenant) {
       ctx.translated = result.translated
     }
 
-    console.log('FACETS_RESULT', {
-      hasBreadcrumb: !!result.breadcrumb,
-      breadcrumbLength: result.breadcrumb?.length,
-      hasFacets: !!result.facets,
-      facetsLength: result.facets?.length,
-      hasCategories: !!result.categories,
-      categoriesLength: result.categories?.length
-    });
 
     return result
   },
@@ -497,7 +456,6 @@ export const queries = {
 
     const selectedFacets: SelectedFacet[] = buildSelectedFacets(args)
     const workspaceSearchParams = await getWorkspaceSearchParamsFromStorage(ctx)
-
     const biggyArgs = {
       ...advertisementOptions,
       ...args,
@@ -582,7 +540,6 @@ export const queries = {
     } = args
 
     const workspaceSearchParams = await getWorkspaceSearchParamsFromStorage(ctx)
-
     const biggyArgs: {[key:string]: any} = {
       ...advertisementOptions,
       ...args,
