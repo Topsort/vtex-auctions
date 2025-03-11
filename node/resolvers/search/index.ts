@@ -316,9 +316,8 @@ const buildSelectedFacets = (args: SearchArgs) => {
 }
 
 const defaultAdvertisementOptions: AdvertisementOptions = {
-  showSponsored: true,
+  showSponsored: false,
   sponsoredCount: 3,
-  sponsoredCategoryCount: 2,
   repeatSponsoredProducts: true
 }
 
@@ -359,20 +358,14 @@ export const queries = {
       args
     )) as FacetsInput
 
-
     let { selectedFacets } = args
 
     const {
       clients: { intelligentSearchApi },
     } = ctx
 
-    const advertisementOptions = {
+    const biggyArgs: {[key:string]: any} = {
       ...args
-    }
-
-    const biggyArgs: {[key:string]: any}  = {
-      ...args,
-      ...advertisementOptions
     }
 
     delete biggyArgs.selectedFacets
@@ -382,7 +375,6 @@ export const queries = {
     if (ctx.vtex.tenant) {
       ctx.translated = result.translated
     }
-
 
     return result
   },
@@ -456,6 +448,7 @@ export const queries = {
 
     const selectedFacets: SelectedFacet[] = buildSelectedFacets(args)
     const workspaceSearchParams = await getWorkspaceSearchParamsFromStorage(ctx)
+
     const biggyArgs = {
       ...advertisementOptions,
       ...args,
@@ -465,8 +458,6 @@ export const queries = {
 
     // unnecessary field. It's is an object and breaks the @vtex/api cache
     delete biggyArgs.selectedFacets
-
-    console.log('hereeee sponsored products')
 
     const settings: AppSettings = await ctx.clients.apps.getAppSettings(APP_NAME)
     biggyArgs.sponsoredCount = settings.sponsoredCount || biggyArgs.sponsoredCount;
@@ -540,6 +531,7 @@ export const queries = {
     } = args
 
     const workspaceSearchParams = await getWorkspaceSearchParamsFromStorage(ctx)
+
     const biggyArgs: {[key:string]: any} = {
       ...advertisementOptions,
       ...args,

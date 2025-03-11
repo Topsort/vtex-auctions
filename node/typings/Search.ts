@@ -95,7 +95,6 @@ interface AdvertisementOptions {
   sponsoredCount?: number
   repeatSponsoredProducts?: boolean
   advertisementPlacement?: string
-  sponsoredCategoryCount?: number
 }
 
 interface FacetsInput {
