@@ -252,8 +252,6 @@ export class IntelligentSearchApi extends ExternalClient {
     }
 
     topsortQueryArgParams.splice(0, topsortQueryArgParams.length);
-    console.log('LOG AUCTION', JSON.stringify(auction))
-
     try {
       const auctionResult = await this.http.post<AuctionResult>('http://api.topsort.com/v2/auctions', auction, {
         headers: {
