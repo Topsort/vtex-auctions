@@ -271,8 +271,10 @@ export class IntelligentSearchApi extends ExternalClient {
         for (const winner of auctionResult.results[0].winners) {
           const product: any = productMap.get(winner.id);
           if (product) {
-            const properties = product.properties || [];
-            properties.push({
+            if (!product.properties) {
+              product.properties = [];
+            }
+            product.properties.push({
               name: "resolvedBidId",
               values: [winner.resolvedBidId],
             });
@@ -280,7 +282,7 @@ export class IntelligentSearchApi extends ExternalClient {
               ...product,
               productName: `${product.productName} (ad)`,
             });
-          }
+          }          
         }
       }
 
