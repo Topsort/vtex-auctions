@@ -293,8 +293,10 @@ export class IntelligentSearchApi extends ExternalClient {
           const product: any = productMap.get(winner.id) || expandedProductMap.get(winner.id);
 
           if (product) {
-            const properties = product.properties || [];
-            properties.push({
+            if (!product.properties) {
+              product.properties = [];
+            }
+            product.properties.push({
               name: "resolvedBidId",
               values: [winner.resolvedBidId],
             });
@@ -302,7 +304,7 @@ export class IntelligentSearchApi extends ExternalClient {
               ...product,
               productName: activateDebugSponsoredTags ? `${product.productName} (ad)` : product.productName
             });
-          }
+          }          
         }
       }
 
