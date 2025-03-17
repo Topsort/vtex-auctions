@@ -65,6 +65,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Added `alwaysLeafCategoryAuction` settings parameter to run auctions only over leaf categories
 - Added `activateDebugSponsoredTags` settings parameter to display the (Ad) tag next to sponsored products
+- Improved fill-rate for keyword auctions
+- Fixed minor bugs
 
 ## [2.1.0] - 2025-03-11
 
