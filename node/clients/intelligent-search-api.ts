@@ -319,9 +319,6 @@ export class IntelligentSearchApi extends ExternalClient {
         );
 
         const newProducts = [...sponsoredProducts, ...result.products];
-        newProducts.forEach((product: any) => {
-          delete product.cacheId
-        });
         sponsoredResult = {
           ...result,
           products: newProducts,
