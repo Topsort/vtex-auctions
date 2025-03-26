@@ -224,7 +224,7 @@ export class IntelligentSearchApi extends ExternalClient {
                 {
                   type: "listings",
                   slots: params.sponsoredCount || 2,
-                  searchQuery: decodeURIComponent(arg.value)
+                  searchQuery: arg.value
                 },
               ],
             };
