@@ -145,7 +145,7 @@ export class IntelligentSearchApi extends ExternalClient {
     for (const arg of queryArgs) {
       if (!forbiddenKeywords.includes(arg.value)) {
         topsortQueryArgParams.push({
-          type: arg.key === 'ft'
+          type: arg.key === 'ft' || arg.key === 'b'
             ? 'query'
             : arg.key === 'c'
               ? 'category'
@@ -224,7 +224,7 @@ export class IntelligentSearchApi extends ExternalClient {
                 {
                   type: "listings",
                   slots: params.sponsoredCount || 2,
-                  searchQuery: arg.value
+                  searchQuery: decodeURIComponent(arg.value)
                 },
               ],
             };
