@@ -1,7 +1,7 @@
 {
   "vendor": "topsortpartnercl",
   "name": "auctions",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "title": "Topsort's Auctions Integration",
   "description": "Topsort's Fork of VTEX search resolver to run auctions in Topsort.",
   "credentialType": "absolute",
@@ -51,6 +51,11 @@
       },
       "activateDebugSponsoredTags": {
         "title": "Activate debug sponsored tags",
+        "type": "boolean",
+        "default": false
+      },
+      "skipAuctionForSearchAndCategory": {
+        "title": "Skip auction for search and category",
         "type": "boolean",
         "default": false
       }

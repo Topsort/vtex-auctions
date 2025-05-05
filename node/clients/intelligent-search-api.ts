@@ -163,7 +163,7 @@ export class IntelligentSearchApi extends ExternalClient {
     path: string,
     shippingHeader?: string[],
   ) {
-    const { query, leap, searchState, alwaysLeafCategoryAuction, activateDebugSponsoredTags } = params;
+    const { query, leap, searchState, alwaysLeafCategoryAuction, activateDebugSponsoredTags, skipAuctionForSearchAndCategory } = params;
     if (isPathTraversal(path)) {
       throw new Error("Malformed URL");
     }
@@ -217,6 +217,10 @@ export class IntelligentSearchApi extends ExternalClient {
 
     const arg = topsortQueryArgParams[0];
     if (arg) {
+      
+      if ((arg.type === 'query' || arg.type === 'category') && skipAuctionForSearchAndCategory) {
+        return result;
+      }
       switch (arg.type) {
         case 'query':
             auction = {
@@ -267,7 +271,7 @@ export class IntelligentSearchApi extends ExternalClient {
           "Content-Type": "application/json",
           "X-VTEX-Use-Https": true,
           "X-Vtex-Remote-Port": 443,
-          "X-UA": `@topsort/vtex-search-resolver`,
+          "X-UA": "@topsort/vtex-search-resolver",
           Accept: "application/json",
           Authorization: `Bearer ${marketplaceAPIKey}`,
         }

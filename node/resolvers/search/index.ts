@@ -456,6 +456,7 @@ export const queries = {
       ...workspaceSearchParams,
       alwaysLeafCategoryAuction: false,
       activateDebugSponsoredTags: false,
+      skipAuctionForSearchAndCategory: false,
     }
 
     // unnecessary field. It's is an object and breaks the @vtex/api cache
@@ -465,6 +466,7 @@ export const queries = {
     biggyArgs.sponsoredCount = settings.sponsoredCount || biggyArgs.sponsoredCount;
     biggyArgs.alwaysLeafCategoryAuction = settings.alwaysLeafCategoryAuction || biggyArgs.alwaysLeafCategoryAuction;
     biggyArgs.activateDebugSponsoredTags = settings.activateDebugSponsoredTags || biggyArgs.activateDebugSponsoredTags;
+    biggyArgs.skipAuctionForSearchAndCategory = settings.skipAuctionForSearchAndCategory || biggyArgs.skipAuctionForSearchAndCategory;
     const result = await intelligentSearchApi.productSearch(biggyArgs, buildAttributePath(selectedFacets), args.shippingOptions)
 
     if (ctx.vtex.tenant) {
@@ -547,6 +549,7 @@ export const queries = {
       sponsoredCount: settings.sponsoredCount,
       alwaysLeafCategoryAuction: settings.alwaysLeafCategoryAuction,
       activateDebugSponsoredTags: settings.activateDebugSponsoredTags,
+      skipAuctionForSearchAndCategory: settings.skipAuctionForSearchAndCategory,
     }
 
     // unnecessary field. It's is an object and breaks the @vtex/api cache
