@@ -217,7 +217,6 @@ export class IntelligentSearchApi extends ExternalClient {
 
     const arg = topsortQueryArgParams[0];
     if (arg) {
-
       if ((arg.type === 'query' || arg.type === 'category') && skipAuctionForSearchAndCategory) {
         return result;
       }
