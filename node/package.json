@@ -22,7 +22,7 @@
     "@gocommerce/utils": "^0.6.11",
     "@vtex/vtexis-compatibility-layer": "^1.2.13",
     "atob": "^2.1.2",
-    "axios": "^0.21.2",
+    "axios": "^0.28.0",
     "camelcase": "^5.0.0",
     "cookie": "^0.3.1",
     "graphql": "^14.7.0",
