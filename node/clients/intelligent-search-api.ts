@@ -314,7 +314,7 @@ export class IntelligentSearchApi extends ExternalClient {
               ...product,
               productName: activateDebugSponsoredTags ? `${product.productName} (ad)` : product.productName,
             });
-          }
+          }          
         }
       }
 
