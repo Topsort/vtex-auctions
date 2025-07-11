@@ -1,6 +1,5 @@
-import './globals'
-
-import { Cached, LRUCache, RecorderState, Service, method } from '@vtex/api'
+import type { Cached, RecorderState } from '@vtex/api'
+import { LRUCache, Service, method } from '@vtex/api'
 import schema from 'vtex.search-graphql/graphql'
 
 import { Clients } from './clients'
@@ -17,18 +16,17 @@ const SIX_SECONDS_MS = 6 * 1000
 const NINE_SECONDS_MS = 9 * 1000
 
 // Segments are small and immutable.
-const MAX_SEGMENT_CACHE = 10000
-const segmentCache = new LRUCache<string, Cached>({ max: MAX_SEGMENT_CACHE })
+const segmentCache = new LRUCache<string, Cached>({ max: 1000 })
 const searchCache = new LRUCache<string, Cached>({ max: 3000 })
 const messagesCache = new LRUCache<string, Cached>({ max: 3000 })
 const vbaseCache = new LRUCache<string, Cached>({ max: 3000 })
-const appsCache = new LRUCache<string, Cached>({ max: 3000 })
-
+const appsCache = new LRUCache<string, Cached>({ max: 1500 })
 
 metrics.trackCache('segment', segmentCache)
 metrics.trackCache('search', searchCache)
 metrics.trackCache('messages', messagesCache)
 metrics.trackCache('vbase', vbaseCache)
+metrics.trackCache('apps', appsCache)
 
 export default new Service<Clients, RecorderState, CustomContext>({
   clients: {

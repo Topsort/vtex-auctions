@@ -6,7 +6,7 @@
   "description": "Topsort's Fork of VTEX search resolver to run auctions in Topsort.",
   "credentialType": "absolute",
   "builders": {
-    "node": "6.x",
+    "node": "7.x",
     "docs": "0.x"
   },
   "billingOptions": {

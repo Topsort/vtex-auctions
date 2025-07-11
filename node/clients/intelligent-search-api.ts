@@ -217,7 +217,6 @@ export class IntelligentSearchApi extends ExternalClient {
 
     const arg = topsortQueryArgParams[0];
     if (arg) {
-      
       if ((arg.type === 'query' || arg.type === 'category') && skipAuctionForSearchAndCategory) {
         return result;
       }
@@ -279,7 +278,7 @@ export class IntelligentSearchApi extends ExternalClient {
           Authorization: `Bearer ${marketplaceAPIKey}`,
         }
       })
-      
+
       const productMap = new Map(result.products.map((product: any) => [product.productId, product]));
       const sponsoredProducts: any[] = [];
 
@@ -291,7 +290,7 @@ export class IntelligentSearchApi extends ExternalClient {
           const expandedResult = await search.productsById(auctionResult.results[0].winners.map((winner: any) => winner.id))
           expandedProductMap = new Map(expandedResult.map((product: any) => [product.productId, product]));
         }
-        
+
         for (const winner of auctionResult.results[0].winners) {
           const product: any = productMap.get(winner.id) || expandedProductMap.get(winner.id);
           if (expandedProductMap.has(winner.id)) {
