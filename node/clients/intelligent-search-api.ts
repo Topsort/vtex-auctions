@@ -1,17 +1,41 @@
-import { ExternalClient, InstanceOptions, IOContext } from "@vtex/api";
-import { parseState } from "../utils/searchState";
-import { unveil } from "../resolvers/search/utils";
-import { Search } from "./search";
+import { ExternalClient, InstanceOptions, IOContext } from '@vtex/api'
+import { parseState } from '../utils/searchState'
+import { unveil } from '../resolvers/search/utils'
+
 interface TopsortQueryArgParams {
-  type: string;
-  value: string;
+  type: string
+  value: string
 }
 
-const topsortQueryArgParams: TopsortQueryArgParams[] = [];
+let topsortQueryArgParams: TopsortQueryArgParams[] = []
 
 const isPathTraversal = (str: string) => str.indexOf('..') >= 0
 interface CorrectionParams {
   query: string
+}
+
+type AuctionType = 'banners' | 'listings'
+
+interface Asset {
+  url: string
+}
+
+interface Winner {
+  asset: Asset[]
+  id: string
+  rank: number
+  resolvedBidId: string
+  type: string
+}
+
+interface Result {
+  error: boolean
+  resultType: AuctionType
+  winners: Winner[]
+}
+
+interface AuctionResult {
+  results: Result[]
 }
 
 interface SearchSuggestionsParams {
@@ -44,30 +68,6 @@ interface FacetsArgs {
   regionId?: string | null
 }
 
-type AuctionType = "banners" | "listings";
-
-interface Asset {
-  url: string;
-}
-
-interface Winner {
-  asset: Asset[];
-  id: string;
-  rank: number;
-  resolvedBidId: string;
-  type: string;
-}
-
-interface Result {
-  error: boolean;
-  resultType: AuctionType;
-  winners: Winner[];
-}
-
-interface AuctionResult {
-  results: Result[]
-}
-
 const decodeQuery = (query: string) => {
   try {
     return decodeURIComponent(query)
@@ -80,12 +80,19 @@ export class IntelligentSearchApi extends ExternalClient {
   private locale: string | undefined
 
   public constructor(context: IOContext, options?: InstanceOptions) {
-    super(`http://${context.workspace}--${context.account}.myvtex.com/_v/api/intelligent-search`, context, {
-      ...options,
-      headers: {
-        ...options?.headers,
+    super(
+      `http://${context.workspace}--${context.account}.myvtex.com/_v/api/intelligent-search`,
+      context,
+      {
+        ...options,
+        headers: {
+          ...options?.headers,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
       }
-    })
+    )
 
     const { locale, tenant } = context
     this.locale = locale ?? tenant?.locale
@@ -94,34 +101,85 @@ export class IntelligentSearchApi extends ExternalClient {
   public async topSearches() {
     return this.http.get('/top_searches', {
       params: {
-        locale: this.locale
-      }, metric: 'topSearches'
+        locale: this.locale,
+        _t: Date.now(),
+      },
+      metric: 'topSearches',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
     })
   }
 
   public async correction(params: CorrectionParams) {
-    return this.http.get('/correction_search', { params: { ...params, locale: this.locale }, metric: 'correction' })
+    return this.http.get('/correction_search', {
+      params: { ...params, locale: this.locale, _t: Date.now() },
+      metric: 'correction',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    })
   }
 
   public async searchSuggestions(params: SearchSuggestionsParams) {
-    return this.http.get('/search_suggestions', { params: { ...params, locale: this.locale }, metric: 'searchSuggestions' })
+    return this.http.get('/search_suggestions', {
+      params: { ...params, locale: this.locale, _t: Date.now() },
+      metric: 'searchSuggestions',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    })
   }
 
-  public async autocompleteSearchSuggestions(params: AutocompleteSearchSuggestionsParams) {
-    return this.http.get('/autocomplete_suggestions', { params: { ...params, locale: this.locale }, metric: 'autocompleteSearchSuggestions' })
+  public async autocompleteSearchSuggestions(
+    params: AutocompleteSearchSuggestionsParams
+  ) {
+    return this.http.get('/autocomplete_suggestions', {
+      params: { ...params, locale: this.locale, _t: Date.now() },
+      metric: 'autocompleteSearchSuggestions',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    })
   }
 
   public async banners(params: BannersArgs, path: string) {
     if (isPathTraversal(path)) {
-      throw new Error("Malformed URL")
+      throw new Error('Malformed URL')
     }
 
-    return this.http.get(`/banners/${path}`, { params: { ...params, query: params.query, locale: this.locale }, metric: 'banners' })
+    return this.http.get(`/banners/${path}`, {
+      params: {
+        ...params,
+        query: params.query,
+        locale: this.locale,
+        _t: Date.now(),
+      },
+      metric: 'banners',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    })
   }
 
-  public async facets(params: FacetsArgs, path: string, shippingHeader?: string[]) {
+  public async facets(
+    params: FacetsArgs,
+    path: string,
+    shippingHeader?: string[]
+  ) {
+    topsortQueryArgParams = []
     if (isPathTraversal(path)) {
-      throw new Error("Malformed URL")
+      throw new Error('Malformed URL')
     }
 
     const { query, leap, searchState } = params
@@ -133,47 +191,45 @@ export class IntelligentSearchApi extends ExternalClient {
         locale: this.locale,
         bgy_leap: leap ? true : undefined,
         ...parseState(searchState),
+        _t: Date.now(),
       },
       metric: 'facets',
       headers: {
         'x-vtex-shipping-options': shippingHeader ?? '',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
       },
     })
 
     const queryArgs = result.queryArgs.selectedFacets
-    const forbiddenKeywords = ["installHook.js.map"];
+    const forbiddenKeywords = ['installHook.js.map']
     for (const arg of queryArgs) {
       if (!forbiddenKeywords.includes(arg.value)) {
         topsortQueryArgParams.push({
-          type: arg.key === 'ft' || arg.key === 'b'
-            ? 'query'
-            : arg.key === 'c'
+          type:
+            arg.key === 'ft' || arg.key === 'b'
+              ? 'query'
+              : arg.key === 'c'
               ? 'category'
               : 'none',
-          value: arg.value
+          value: arg.value,
         })
       }
     }
 
-    return result;
+    return result
   }
-
   public async productSearch(
     params: SearchResultArgs,
     path: string,
-    shippingHeader?: string[],
+    shippingHeader?: string[]
   ) {
-    const { query, leap, searchState, alwaysLeafCategoryAuction, activateDebugSponsoredTags, skipAuctionForSearchAndCategory } = params;
-    if (isPathTraversal(path)) {
-      throw new Error("Malformed URL");
-    }
+    const { query, leap, searchState, activateDebugSponsoredTags, sponsoredCount, transformCategoriesToPath } = params
 
-    const search = new Search(this.context, {
-      ...this.options,
-      headers: {
-        ...this.options?.headers,
-      }
-    })
+    if (isPathTraversal(path)) {
+      throw new Error('Malformed URL')
+    }
 
     const result = await this.http.get(`/product_search/${path}`, {
       params: {
@@ -182,173 +238,138 @@ export class IntelligentSearchApi extends ExternalClient {
         bgy_leap: leap ? true : undefined,
         ...parseState(searchState),
         ...params,
+        _t: Date.now(),
       },
-      metric: "product-search",
+      metric: 'product-search',
       headers: {
-        "x-vtex-shipping-options": shippingHeader ?? "",
+        'x-vtex-shipping-options': shippingHeader ?? '',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
       },
-    });
+    })
 
-    let sponsoredResult = result;
-
-    if (sponsoredResult.products.length === 0) {
-      return sponsoredResult;
-    }
+    const productIds = result.products.map((product: any) => product.productId)
+    const newProducts = result.products || []
 
     const { data } = await this.http
-      .get(`http://${this.context.workspace}--${this.context.account}.myvtex.com/_v/ts/settings`)
+      .get(
+        `http://${this.context.workspace}--${this.context.account}.myvtex.com/_v/ts/settings`
+      )
       .catch((error) => {
         console.error(`Error fetching Topsort Services settings: ${error}`)
         return undefined
-      });
-
-    const marketplaceAPIKey = unveil(data)?.marketplaceAPIKey || undefined
-
-    if (!marketplaceAPIKey) {
-      this.context.logger.info({
-        service: "IntelligentSearchApi",
-        message: "Topsort API Key is not set",
-      });
-
-      return result;
-    }
-
-    let auction = undefined;
-
-    const arg = topsortQueryArgParams[0];
-    if (arg) {
-      
-      if ((arg.type === 'query' || arg.type === 'category') && skipAuctionForSearchAndCategory) {
-        return result;
-      }
-      switch (arg.type) {
-        case 'query':
-            auction = {
-              auctions: [
-                {
-                  type: "listings",
-                  slots: params.sponsoredCount || 2,
-                  searchQuery: decodeURIComponent(arg.value)
-                },
-              ],
-            };
-          break;
-        case 'category':
-          auction = {
-            auctions: [
-              {
-                type: "listings",
-                slots: params.sponsoredCount || 2,
-                category: {
-                  ids: alwaysLeafCategoryAuction ? [arg.value] : topsortQueryArgParams.map(arg => arg.value),
-                },
-              },
-            ],
-          };
-          break;
-        default:
-          break;
-      }
-    } else {
-      const productIds = result.products.map((product: any) => product.productId);
-      auction = {
-        auctions: [
-          {
-            type: "listings",
-            slots: params.sponsoredCount || 2,
-            products: {
-              ids: productIds,
-            },
-          },
-        ],
-      };
-    }
-
-    topsortQueryArgParams.splice(0, topsortQueryArgParams.length);
-    try {
-      const auctionResult = await this.http.post<AuctionResult>('http://api.topsort.com/v2/auctions', auction, {
-        headers: {
-          "Content-Type": "application/json",
-          "X-VTEX-Use-Https": true,
-          "X-Vtex-Remote-Port": 443,
-          "X-UA": "@topsort/vtex-search-resolver",
-          Accept: "application/json",
-          Authorization: `Bearer ${marketplaceAPIKey}`,
-        }
       })
-      
-      const productMap = new Map(result.products.map((product: any) => [product.productId, product]));
-      const sponsoredProducts: any[] = [];
 
-      if (auctionResult.results[0].winners) {
-        const allWinnersInProductMap = auctionResult.results[0].winners.every((winner: any) => productMap.has(winner.id));
+    const TOPSORT_API_KEY = unveil(data)?.marketplaceAPIKey || undefined
 
-        let expandedProductMap = new Map<string, any>();
-        if (!allWinnersInProductMap) {
-          const expandedResult = await search.productsById(auctionResult.results[0].winners.map((winner: any) => winner.id))
-          expandedProductMap = new Map(expandedResult.map((product: any) => [product.productId, product]));
-        }
-        
-        for (const winner of auctionResult.results[0].winners) {
-          const product: any = productMap.get(winner.id) || expandedProductMap.get(winner.id);
-          if (expandedProductMap.has(winner.id)) {
-            product.properties = Object.keys(expandedProductMap.get(winner.id)).map((key: any) => ({
-              name: key,
-              originalName: key,
-              values: [expandedProductMap.get(winner.id)[key]],
-            }));
-          }
-          if (product) {
-            if (!product.properties) {
-              product.properties = [];
-            }
-            product.properties.push({
-              name: "resolvedBidId",
-              originalName: "resolvedBidId",
-              values: [winner.resolvedBidId],
-            });
-            sponsoredProducts.push({
-              ...product,
-              productName: activateDebugSponsoredTags ? `${product.productName} (ad)` : product.productName,
-            });
-          }
-        }
-      }
-
-      if (sponsoredProducts.length > 0) {
-        result.products = result.products.filter(
-          (product: any) =>
-            !productMap.has(product.productId) ||
-            !sponsoredProducts.find(sp => sp.productId === product.productId)
-        );
-
-        const newProducts = [...sponsoredProducts, ...result.products];
-        sponsoredResult = {
-          ...result,
-          products: newProducts,
-        }
-      }
-
-      this.context.logger.info({
-        service: "IntelligentSearchApi",
-        message: "createAuction axios api test passed",
-        result: result.products,
-      });
-    } catch (err) {
-      this.context.logger.warn({
-        service: "IntelligentSearchApi",
-        error: err.message,
-        errorStack: err,
-      });
+    const topsortQuery: any = {
+      type: 'listings',
+      products: { ids: productIds },
+      slots: sponsoredCount,
     }
 
-    return sponsoredResult;
+    if (params.query && params.query.length > 0) {
+      topsortQuery.searchQuery = params.query
+    }
+
+    if (
+      topsortQueryArgParams.length > 0 &&
+      topsortQueryArgParams[0].type === 'category'
+    ) {
+      console.log("[DEBUG] transformCategoriesToPath", transformCategoriesToPath)
+      topsortQuery.categories = {
+        ids: transformCategoriesToPath 
+          ? topsortQueryArgParams.reduce((paths: string[], _, index) => {
+              const path = topsortQueryArgParams
+                .slice(0, index + 1)
+                .map(a => a.value)
+                .join('/')
+              return [...paths, `/${path}/`]
+            }, [])
+          : topsortQueryArgParams.map(arg => arg.value)
+      }
+    }
+
+    console.log("[DEBUG] topsortQuery", topsortQuery)
+
+    try {
+      const auctionResult = await this.http.post<AuctionResult>(
+        'http://api.topsort.com/v2/auctions',
+        {
+          auctions: [topsortQuery],
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-VTEX-Use-Https': true,
+            'X-Vtex-Remote-Port': 443,
+            'X-UA': '@topsort/vtex-search-resolver',
+            Accept: 'application/json',
+            Authorization: `Bearer ${TOPSORT_API_KEY}`,
+          },
+        }
+      )
+
+      const winners: any = auctionResult.results[0].winners
+
+      const missingProducts: any = winners.filter(
+        (id: string) => !productIds.includes(id)
+      )
+
+      for (const winner of missingProducts) {
+        const adProductResponse = await this.http.get(
+          `/product_search/${path}`,
+          {
+            params: {
+              query: `product:${winner.id}`,
+              locale: this.locale,
+              bgyLeap: undefined,
+              _t: Date.now(),
+          },
+            metric: 'product-search-ad',
+            headers: {
+              'x-vtex-shipping-options': shippingHeader ?? '',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+              Expires: '0',
+            },
+        })
+        newProducts.push(adProductResponse.products[0])
+      }
+      for (const winner of winners) {
+        const index = newProducts.findIndex(
+          (product: any) => product.productId === winner.id
+        )
+
+        if (index !== -1) {
+          const product = newProducts[index]
+          product.productName = activateDebugSponsoredTags ? `[AD] ${product.productName}` : product.productName
+          product.cacheId = `ad-${product.cacheId}-${Math.random()}`
+          product.properties.push({
+            name: 'resolvedBidId',
+            originalName: 'resolvedBidId',
+            values: [winner.resolvedBidId],
+          })
+          newProducts.splice(index, 1)
+          newProducts.unshift(product)
+        }
+      }
+      result.products = newProducts
+      return result
+    } catch (error) {
+      return result
+    }
   }
 
-  public async sponsoredProducts(params: SearchResultArgs, path: string, shippingHeader?: string[]) {
+  public async sponsoredProducts(
+    params: SearchResultArgs,
+    path: string,
+    shippingHeader?: string[]
+  ) {
     const { query, leap, searchState } = params
     if (isPathTraversal(path)) {
-      throw new Error("Malformed URL")
+      throw new Error('Malformed URL')
     }
 
     return this.http.get(`/sponsored_products/${path}`, {
@@ -358,10 +379,14 @@ export class IntelligentSearchApi extends ExternalClient {
         bgy_leap: leap ? true : undefined,
         ...parseState(searchState),
         ...params,
+        _t: Date.now(),
       },
       metric: 'product-search',
       headers: {
         'x-vtex-shipping-options': shippingHeader ?? '',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
       },
     })
   }
