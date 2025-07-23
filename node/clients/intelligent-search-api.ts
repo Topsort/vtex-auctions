@@ -266,7 +266,7 @@ export class IntelligentSearchApi extends ExternalClient {
     const topsortQuery: any = {
       type: 'listings',
       products: { ids: productIds },
-      slots: sponsoredCount,
+      slots: sponsoredCount || 2,
     }
 
     if (params.query && params.query.length > 0) {
