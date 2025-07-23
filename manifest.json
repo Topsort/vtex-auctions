@@ -1,7 +1,7 @@
 {
   "vendor": "topsortpartnercl",
   "name": "auctions",
-  "version": "2.3.1",
+  "version": "3.0.0",
   "title": "Topsort's Auctions Integration",
   "description": "Topsort's Fork of VTEX search resolver to run auctions in Topsort.",
   "credentialType": "absolute",
@@ -56,6 +56,11 @@
       },
       "skipAuctionForSearchAndCategory": {
         "title": "Skip auction for search and category",
+        "type": "boolean",
+        "default": false
+      },
+      "transformCategoriesToPath": {
+        "title": "Transform categories to path",
         "type": "boolean",
         "default": false
       }
