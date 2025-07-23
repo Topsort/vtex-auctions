@@ -60,7 +60,8 @@ declare global {
     sponsoredCount: number,
     alwaysLeafCategoryAuction: boolean,
     activateDebugSponsoredTags: boolean,
-    skipAuctionForSearchAndCategory: boolean
+    skipAuctionForSearchAndCategory: boolean,
+    transformCategoriesToPath: boolean
   }
 
   interface ServiceSettings {
