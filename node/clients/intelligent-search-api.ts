@@ -270,7 +270,7 @@ export class IntelligentSearchApi extends ExternalClient {
     }
 
     if (params.query && params.query.length > 0) {
-      topsortQuery.searchQuery = params.query
+      topsortQuery.searchQuery = decodeQuery(params.query)
     }
 
     if (
