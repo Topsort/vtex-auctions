@@ -68,6 +68,27 @@ interface FacetsArgs {
   regionId?: string | null
 }
 
+interface Product {
+  productId: string
+  productName: string
+  cacheId: string
+  properties: {
+    name: string
+    originalName: string
+    values: string[]
+  }[]
+}
+
+interface TopsortQuery {
+  type: string
+  products: { ids: string[] }
+  slots: number
+  searchQuery?: string
+  categories?: {
+    ids: string[]
+  }
+}
+
 const decodeQuery = (query: string) => {
   try {
     return decodeURIComponent(query)
@@ -249,7 +270,7 @@ export class IntelligentSearchApi extends ExternalClient {
       },
     })
 
-    const productIds = result.products.map((product: any) => product.productId)
+    const productIds = result.products.map((product: Product) => product.productId)
     const newProducts = result.products || []
 
     const { data } = await this.http
@@ -263,7 +284,7 @@ export class IntelligentSearchApi extends ExternalClient {
 
     const TOPSORT_API_KEY = unveil(data)?.marketplaceAPIKey || undefined
 
-    const topsortQuery: any = {
+    const topsortQuery: TopsortQuery = {
       type: 'listings',
       products: { ids: productIds },
       slots: sponsoredCount || 2,
@@ -292,6 +313,7 @@ export class IntelligentSearchApi extends ExternalClient {
     }
 
     console.log("[DEBUG] topsortQuery", topsortQuery)
+    
 
     try {
       const auctionResult = await this.http.post<AuctionResult>(
@@ -311,10 +333,10 @@ export class IntelligentSearchApi extends ExternalClient {
         }
       )
 
-      const winners: any = auctionResult.results[0].winners
+      const winners: Winner[] = auctionResult.results[0].winners
 
-      const missingProducts: any = winners.filter(
-        (id: string) => !productIds.includes(id)
+      const missingProducts: Winner[] = winners.filter(
+        (winner: Winner) => !productIds.includes(winner.id)
       )
 
       for (const winner of missingProducts) {
@@ -335,11 +357,13 @@ export class IntelligentSearchApi extends ExternalClient {
               Expires: '0',
             },
         })
-        newProducts.push(adProductResponse.products[0])
+        if (adProductResponse.products && adProductResponse.products[0]) {
+          newProducts.push(adProductResponse.products[0])
+        }
       }
       for (const winner of winners) {
         const index = newProducts.findIndex(
-          (product: any) => product.productId === winner.id
+          (product: Product) => product && product.productId === winner.id
         )
 
         if (index !== -1) {
@@ -358,6 +382,7 @@ export class IntelligentSearchApi extends ExternalClient {
       result.products = newProducts
       return result
     } catch (error) {
+      console.error('Error in auction processing:', error)
       return result
     }
   }
