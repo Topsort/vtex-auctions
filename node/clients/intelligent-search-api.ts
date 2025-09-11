@@ -306,7 +306,7 @@ export class IntelligentSearchApi extends ExternalClient {
                 .slice(0, index + 1)
                 .map(a => a.value)
                 .join('/')
-              return [...paths, `/${path}/`]
+              return [...paths, `/${path}`]
             }, [])
           : topsortQueryArgParams.map(arg => arg.value)
       }
