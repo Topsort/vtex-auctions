@@ -29,11 +29,12 @@ The app has several configuration options:
 1. [Install](https://developers.vtex.com/docs/guides/vtex-io-documentation-vtex-io-cli-install) VTEX's CLI. You can confirm that the app has now been installed by running `vtex ls` again.
 2. Run the command `vtex install topsortpartnercl.services@3.x.`
 3. Run the command `vtex install topsortpartnercl.auctions@2.x.`
-4. Go to the App Settings on VTEX's App Management, search for `Topsort's Services` and add your **Topsort Marketplace API Key**;
-5. Click on **Save**;
-6. Optionally, go to the App Settings on VTEX's App Management, search for `Topsort's Auctions Integration`;
-7. Add the __Topsort Number of Sponsored Slots__;
-8. Click on **Save**.
+4. Uninstall the vtex search-resolver `vtex uninstall vtex.search-resolver`
+5. Go to the App Settings on VTEX's App Management, search for `Topsort's Services` and add your **Topsort Marketplace API Key**;
+6. Click on **Save**;
+7. Optionally, go to the App Settings on VTEX's App Management, search for `Topsort's Auctions Integration`;
+8. Add the __Topsort Number of Sponsored Slots__;
+9. Click on **Save**.
 
 Now Topsort is running auctions and augmenting your search results successfully!
 
